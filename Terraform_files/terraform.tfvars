@@ -1,0 +1,7 @@
+vsphere_server = "192.168.1.150"
+vsphere_user = "root"
+vsphere_password = "*******"
+vsphere_datastore = "datastore1"
+datacenter = "ha-datacenter"
+vm_template_name = "spark-remote"
+ssh_private_key = "-----BEGIN OPENSSH PRIVATE KEY-----\nssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCykzUBHqDybnjQJpsByCPdWPFaQmZg+az3pwFGy64qf8AGEUzn/0/ABEQtABmDL3Nr+84qe7j2y3OhkV1xRI643gfv463amx8/IqxENL0hROhMnt3lGkVQVcYTwMidDeOaH3JV/m8/MceG5CJ1dMndiFU94ch7hTd6fzyvkVBFB31tjF0RK0CmDBErm45zgDX91SPjt18lAzwcDrdY+q9ppk8aAFCwtBL6f4rQdbiLtpY683Q3H1SazJLjkE10+6OCwi3v+1DZG+QD2esMf3c/RZy/UDvfdXlIPjkVr8ihmaSYjhwAVCEDvBXsTIIRpmLzfRvVVeIq+imyUNhwAdR1 ansible@ansible\n-----END OPENSSH PRIVATE KEY-----"

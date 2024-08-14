@@ -1,0 +1,77 @@
+- hosts: masters
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Ensure kubelet service is enabled and running
+      systemd:
+        name: kubelet
+        enabled: yes
+        state: started
+
+    - name: Initialize the cluster
+      shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.1.100
+      args:
+        chdir: /root
+        creates: /etc/kubernetes/admin.conf
+      register: kubeadm_init
+      retries: 3
+      delay: 10
+      until: kubeadm_init.rc == 0
+
+    - name: Create .kube directory for the test user
+      file:
+        path: /home/test/.kube
+        state: directory
+        owner: test
+        group: test
+        mode: '0755'
+
+    - name: Copy admin.conf to test user's kube config
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/test/.kube/config
+        remote_src: yes
+        owner: test
+        group: test
+        mode: '0644'
+
+    - name: Set KUBECONFIG environment variable for test user
+      lineinfile:
+        path: /home/test/.bashrc
+        line: 'export KUBECONFIG=/home/test/.kube/config'
+        create: yes
+
+    - name: Download Flannel manifest
+      get_url:
+        url: https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+        dest: /home/test/kube-flannel.yml
+
+    - name: Apply Flannel manifest
+      shell: kubectl apply -f /home/test/kube-flannel.yml
+      args:
+        chdir: /home/test
+      environment:
+        KUBECONFIG: /home/test/.kube/config
+      register: flannel_apply
+      retries: 3
+      delay: 10
+      until: flannel_apply.rc == 0
+
+    - name: Get the token for joining the worker nodes
+      become: yes 
+      shell: KUBECONFIG=/etc/kubernetes/admin.conf /usr/bin/kubeadm token create --print-join-command
+      register: kubernetes_join_command
+      retries: 3
+      delay: 10
+      until: kubernetes_join_command.rc == 0
+
+    - name: Display the join command
+      debug:
+        msg: "{{ kubernetes_join_command.stdout }}"
+
+    - name: Save join command
+      local_action:
+        module: copy
+        content: "{{ kubernetes_join_command.stdout }}"
+        dest: "/tmp/kubernetes_join_command"
+      become: no

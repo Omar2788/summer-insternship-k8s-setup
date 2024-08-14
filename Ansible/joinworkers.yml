@@ -1,0 +1,21 @@
+- hosts: workers
+  become: yes
+  tasks:
+    - name: Copy the join command to worker nodes
+      copy:
+        src: /tmp/kubernetes_join_command
+        dest: /tmp/kubernetes_join_command
+        mode: '0777'
+
+    - name: Join the worker nodes to the cluster
+      command: sh /tmp/kubernetes_join_command
+      register: join_result
+
+    - name: Display join result
+      debug:
+        var: join_result.stdout_lines
+
+  #  - name: Remove the join command file
+ #     file:
+#        path: /tmp/kubernetes_join_command
+#        state: absent
